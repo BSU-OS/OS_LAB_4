@@ -17,8 +17,8 @@ private:
     using Matrix = std::vector<std::vector<ValueType> >;
     Matrix<int> A, B;
     Matrix<Matrix<int> > splitA, splitB;
-    int N;
-    int splitSize;
+    int N = 1;
+    int splitSize = 0;
 public:
     MatrixMultiply(int n) {
         N = n;//TODO
@@ -32,7 +32,7 @@ public:
             printTimeData(test(i));
     }
 
-    void printTimeData(clock_t mainTime) {
+    void printTimeData(clock_t mainTime) const {
         std::cout << std::fixed << std::setprecision(3);
         std::cout << "Size policy           " << N << "     Split policy        " << splitSize << '\n';
         std::cout << "Main time in ms       " << mainTime << '\n';
@@ -49,25 +49,25 @@ public:
         return mainTime;
     }
 
-    void printMatrix(Matrix<int> &marix) {
+    static void printMatrix(Matrix<int> &marix) {
         std::cout << "----------------------------------\n";
-        for (size_t i = 0; i < marix.size(); ++i) {
-            for (size_t j = 0; j < marix[i].size(); ++j)
-                std::cout << marix[i][j] << ' ';
+        for (auto &i: marix) {
+            for (int j: i)
+                std::cout << j << ' ';
             std::cout << '\n';
         }
         std::cout << "----------------------------------\n";
     }
 
-    void printSplitMatrix(Matrix<Matrix<int> > &splitMatrix) {
+    static void printSplitMatrix(Matrix<Matrix<int> > &splitMatrix) {
         std::cout << "----------------------------------\n";
-        for (size_t i = 0; i < splitMatrix.size(); ++i) {
+        for (auto &i: splitMatrix) {
 
-            for (size_t j = 0; j < splitMatrix[i].size(); ++j) {
+            for (auto &j: i) {
                 std::cout << "----------------------------------\n";
-                for (size_t x = 0; x < splitMatrix[i][j].size(); ++x) {
-                    for (size_t y = 0; y < splitMatrix[i][j][x].size(); ++y)
-                        std::cout << splitMatrix[i][j][x][y] << ' ';
+                for (auto &x: j) {
+                    for (int y: x)
+                        std::cout << y << ' ';
                     std::cout << '\n';
                 }
                 std::cout << "----------------------------------\n";
@@ -76,7 +76,7 @@ public:
         }
     }
 
-    Matrix<Matrix<int> > splitMatrix(Matrix<int> &splitingMatrix) {
+    Matrix<Matrix<int> > splitMatrix(Matrix<int> &splitingMatrix) const {
         Matrix<Matrix<int> > answer;
         answer.resize((int(splitingMatrix.size()) + splitSize - 1) / splitSize,
                       std::vector<Matrix<int> >((splitingMatrix.front().size() + splitSize - 1) / splitSize));
@@ -90,14 +90,14 @@ public:
 
     }
 
-    void initMatrix(Matrix<int> &initialMatrix) {
+    void initMatrix(Matrix<int> &initialMatrix) const {
         initialMatrix.resize(N, std::vector<int>(N));
         for (size_t i = 0; i < N; ++i)
             for (size_t j = 0; j < N; ++j)
-                initialMatrix[i][j] = rand() % 10;
+                initialMatrix[i][j] = std::rand() % 10;
     }
 
-    Matrix<int> multiplyAB(Matrix<int> A, Matrix<int> B) {
+    static Matrix<int> multiplyAB(Matrix<int> A, Matrix<int> B) {
         Matrix<int> C;
         if (A.empty() || B.empty()) {
             if ((A.size() | B.size()) == 0)
@@ -133,7 +133,7 @@ public:
                         Z = MatrixMultiply::multiplyAB(X, Y);
                     }, A[i][k], B[k][j], std::ref(block));
                     thArr[k].join();
-                    if (C[i][j].size() == 0)
+                    if (C[i][j].empty())
                         C[i][j] = block;
                     else
                         C[i][j] = sumAB(block, C[i][j]);
@@ -142,7 +142,7 @@ public:
         return C;
     }
 
-    Matrix<int> sumAB(Matrix<int> A, Matrix<int> B) {
+    static Matrix<int> sumAB(Matrix<int> A, Matrix<int> B) {
 
         if (A.size() != B.size() || A.front().size() != B.front().size()) {
 
