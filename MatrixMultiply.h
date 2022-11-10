@@ -127,16 +127,19 @@ public:
         for (size_t i = 0; i < A.size(); ++i)
             for (size_t j = 0; j < B.front().size(); ++j) {
                 std::vector<std::thread> thArr(B.size());
+                std::vector<Matrix<int> > blocks(B.size());
                 for (size_t k = 0; k < B.size(); ++k) {
-                    Matrix<int> block;
                     thArr[k] = std::thread([this](Matrix<int> X, Matrix<int> Y, Matrix<int> &Z) {
                         Z = MatrixMultiply::multiplyAB(X, Y);
-                    }, A[i][k], B[k][j], std::ref(block));
+                    }, A[i][k], B[k][j], std::ref(blocks[k]));
+
+                }
+                for(size_t k=0;k<B.size();++k){
                     thArr[k].join();
                     if (C[i][j].empty())
-                        C[i][j] = block;
+                        C[i][j] = blocks[k];
                     else
-                        C[i][j] = sumAB(block, C[i][j]);
+                        C[i][j] = sumAB(blocks[k], C[i][j]);
                 }
             }
         return C;
